@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # MySQL Database Container
+  db:
+    image: mysql:8.0
+    container_name: stockflow-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-stockflow_db}
+      MYSQL_USER: ${MYSQL_USER:-stockflow_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-stockflow_pass}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stockflow-net
+
+  # Spring Boot Backend Container
+  backend:
+    build:
+      context: ./stockflow-backend
+      dockerfile: Dockerfile
+    container_name: stockflow-backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-stockflow_db}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-stockflow_user}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-stockflow_pass}
+      JWT_SECRET: ${JWT_SECRET:-5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437}
+      PORT: 8080
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    networks:
+      - stockflow-net
+
+  # React Frontend Container
+  frontend:
+    build:
+      context: ./stockflow-frontend
+      dockerfile: Dockerfile
+    container_name: stockflow-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    networks:
+      - stockflow-net
+
+networks:
+  stockflow-net:
+    driver: bridge
+
+volumes:
+  mysql_data:

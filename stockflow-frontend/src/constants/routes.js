@@ -1,0 +1,20 @@
+export const ROUTES = {
+  LANDING:    '/',
+  HOME:       '/',
+  LOGIN:      '/login',
+  DASHBOARD:  '/dashboard',
+  PRODUCTS:   '/products',
+  CATEGORIES: '/categories',
+  BRANDS:     '/brands',
+  SUPPLIERS:  '/suppliers',
+  WAREHOUSES: '/warehouses',
+  INVENTORY:  '/inventory',
+  PURCHASES:  '/purchases',
+  SALES:      '/sales',
+  REPORTS:    '/reports',
+  USERS:      '/users',
+  SETTINGS:   '/settings',
+  ACCESS_DENIED: '/access-denied',
+  NOT_FOUND:  '*',
+};
+
